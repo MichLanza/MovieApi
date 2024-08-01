@@ -71,7 +71,7 @@ namespace MovieApi.Controllers.Actors
             return new CreatedAtRouteResult("GetActorById", new { id = response.Id }, response);
         }
 
-        [HttpDelete("{id:guid}")]
+        [HttpDelete("{id:guid}")] 
         public async Task<IActionResult> Delete(Guid id)
         {
 
