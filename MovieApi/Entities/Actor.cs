@@ -10,7 +10,7 @@ namespace MovieApi.Entities
         [StringLength(170)]
         public string Name { get; set; } = string.Empty;
 
-        public DateTime BirthDay { get; set; }
+        public DateTime BirthDay { get; set; } 
 
         public string Photo { get; set; } = string.Empty;
 
