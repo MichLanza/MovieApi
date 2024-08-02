@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
 using MovieApi.Dtos.Actors;
 using MovieApi.Entities;
+using MovieApi.Storage;
 
 namespace MovieApi.Controllers.Actors
 {
@@ -13,12 +14,18 @@ namespace MovieApi.Controllers.Actors
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IFileStorage _fileStorage;
+        private readonly string container = "Actors";
 
-
-        public ActorsController(AppDbContext context, IMapper mapper)
+        public ActorsController(
+            AppDbContext context,
+            IMapper mapper,
+            IFileStorage fileStorage
+            )
         {
             _context = context;
             _mapper = mapper;
+            _fileStorage = fileStorage;
         }
 
         [HttpGet]
@@ -44,17 +51,29 @@ namespace MovieApi.Controllers.Actors
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Put(Guid id, UpdateActorDto dto)
+        public async Task<IActionResult> Put(Guid id, [FromForm] UpdateActorDto dto)
         {
-            var exists = await _context.Actors.AnyAsync(actor => actor.Id == id);
+            var actor = await _context.Actors.FirstOrDefaultAsync(actor => actor.Id == id);
 
-            if (!exists)
+            if (actor is null)
             {
                 return NotFound(new { message = "Actor no encontrado" });
             }
-            var actor = _mapper.Map<Actor>(dto);
-            actor.Id = id;
-            _context.Entry(actor).State = EntityState.Modified;
+
+
+            actor = _mapper.Map(dto, actor);
+
+            if (dto.Photo != null)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await dto.Photo.CopyToAsync(ms);
+                    var content = ms.ToArray();
+                    var extention = Path.GetExtension(dto.Photo.FileName);
+                    var contentType = dto.Photo.ContentType;
+                    actor.Photo = await _fileStorage.Edit(content, extention, container, contentType, actor.Photo);
+                }
+            }
 
             await _context.SaveChangesAsync();
 
@@ -65,13 +84,26 @@ namespace MovieApi.Controllers.Actors
         public async Task<IActionResult> Post([FromForm] CreateActorDto dto)
         {
             var actor = _mapper.Map<Actor>(dto);
+
+            if (dto.Photo != null) 
+            {
+                using (var ms = new MemoryStream()) 
+                {
+                    await dto.Photo.CopyToAsync(ms);
+                    var content = ms.ToArray();
+                    var extention = Path.GetExtension(dto.Photo.FileName);
+                    var contentType = dto.Photo.ContentType;
+                    actor.Photo = await _fileStorage.Save(content,extention,container, contentType);
+                }           
+            }
+
             _context.Actors.Add(actor);
             await _context.SaveChangesAsync();
             var response = _mapper.Map<ActorDto>(actor);
             return new CreatedAtRouteResult("GetActorById", new { id = response.Id }, response);
         }
 
-        [HttpDelete("{id:guid}")] 
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
 

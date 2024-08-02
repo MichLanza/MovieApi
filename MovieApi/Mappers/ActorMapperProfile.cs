@@ -9,8 +9,12 @@ namespace MovieApi.Mappers
         public ActorMapperProfile()
         {
             CreateMap<ActorDto, Actor>().ReverseMap();
-            CreateMap<CreateActorDto, Actor>();
-            CreateMap<UpdateActorDto, Actor>();
+
+            CreateMap<CreateActorDto, Actor>()
+                .ForMember(x => x.Photo, options => options.Ignore());
+
+            CreateMap<UpdateActorDto, Actor>()
+                .ForMember(x => x.Photo, options => options.Ignore());
         }
     }
 }

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
+using MovieApi.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conf
 builder.Services.AddAutoMapper(typeof(Program));
 
 
+//builder.Services.AddTransient<IFileStorage, AzureStorageService>(); //para azure
+builder.Services.AddTransient<IFileStorage, LocalStorage>();
+builder.Services.AddHttpContextAccessor();
+
+
 #endregion
 
 
@@ -37,6 +43,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
