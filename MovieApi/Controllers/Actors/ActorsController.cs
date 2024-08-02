@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
@@ -120,6 +121,38 @@ namespace MovieApi.Controllers.Actors
 
             return NoContent();
         }
+
+        [HttpPatch("{id:guid}")]
+        public async Task<IActionResult> Patch(Guid id, [FromForm] JsonPatchDocument<PatchActorDto> dto)
+        {
+            if(dto == null)
+            {
+                return BadRequest();
+            } 
+                
+            var actor = await _context.Actors.FirstOrDefaultAsync(actor => actor.Id == id);
+
+            if (actor is null)
+            {
+                return NotFound(new { message = "Actor no encontrado" });
+            }
+
+
+            var actorDto = _mapper.Map<PatchActorDto>(actor);
+
+            dto.ApplyTo(actorDto, ModelState);
+            var isValid = TryValidateModel(dto);
+            if (isValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            _mapper.Map(dto, actor);
+
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }   
+
 
 
     }

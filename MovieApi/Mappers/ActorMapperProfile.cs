@@ -15,6 +15,10 @@ namespace MovieApi.Mappers
 
             CreateMap<UpdateActorDto, Actor>()
                 .ForMember(x => x.Photo, options => options.Ignore());
+
+
+            CreateMap<PatchActorDto,Actor>().ReverseMap();
+
         }
     }
 }
