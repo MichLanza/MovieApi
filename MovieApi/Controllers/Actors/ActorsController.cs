@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
+using Azure;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
+using MovieApi.Dtos;
 using MovieApi.Dtos.Actors;
 using MovieApi.Entities;
+using MovieApi.Extensions;
 using MovieApi.Storage;
 
 namespace MovieApi.Controllers.Actors
@@ -30,10 +33,23 @@ namespace MovieApi.Controllers.Actors
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] Pagination pagination)
         {
-            var list = await _context.Actors.ToListAsync();
-            var response = _mapper.Map<List<ActorDto>>(list);
+            var queryable = _context.Actors.AsQueryable();
+
+            // await HttpContext.InsertPaging(queryable, pagination.PageSize);
+
+            //var list = await queryable.Paging(pagination).ToListAsync();
+            var list = await queryable.ToListAsync();
+            var data = _mapper.Map<List<ActorDto>>(list).OrderBy(x => x.Name);
+
+            if (pagination.PageSize > 0)
+            {
+                var pagedResponse = PagedList<ActorDto>.Create(data, pagination.Page, pagination.PageSize);
+                return Ok(pagedResponse);
+            }
+
+            var response = data;
             return Ok(response);
         }
 
@@ -86,16 +102,16 @@ namespace MovieApi.Controllers.Actors
         {
             var actor = _mapper.Map<Actor>(dto);
 
-            if (dto.Photo != null) 
+            if (dto.Photo != null)
             {
-                using (var ms = new MemoryStream()) 
+                using (var ms = new MemoryStream())
                 {
                     await dto.Photo.CopyToAsync(ms);
                     var content = ms.ToArray();
                     var extention = Path.GetExtension(dto.Photo.FileName);
                     var contentType = dto.Photo.ContentType;
-                    actor.Photo = await _fileStorage.Save(content,extention,container, contentType);
-                }           
+                    actor.Photo = await _fileStorage.Save(content, extention, container, contentType);
+                }
             }
 
             _context.Actors.Add(actor);
@@ -125,11 +141,11 @@ namespace MovieApi.Controllers.Actors
         [HttpPatch("{id:guid}")]
         public async Task<IActionResult> Patch(Guid id, [FromForm] JsonPatchDocument<PatchActorDto> dto)
         {
-            if(dto == null)
+            if (dto == null)
             {
                 return BadRequest();
-            } 
-                
+            }
+
             var actor = await _context.Actors.FirstOrDefaultAsync(actor => actor.Id == id);
 
             if (actor is null)
@@ -151,7 +167,7 @@ namespace MovieApi.Controllers.Actors
 
             await _context.SaveChangesAsync();
             return NoContent();
-        }   
+        }
 
 
 
