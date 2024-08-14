@@ -1,4 +1,4 @@
-﻿using MovieApi.Dtos.NewFolder;
+﻿using MovieApi.Dtos.Movies;
 
 namespace MovieApi.Dtos.Movies
 {

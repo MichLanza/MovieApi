@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
+using MovieApi.Dtos.Genre;
 using MovieApi.Dtos.Movies;
-using MovieApi.Dtos.NewFolder;
+using MovieApi.Dtos.Movies;
 using MovieApi.Entities;
 
 namespace MovieApi.Mappers
@@ -24,6 +25,10 @@ namespace MovieApi.Mappers
 
 
             CreateMap<PatchMovieDto, Movie>().ReverseMap();
+
+            CreateMap<Movie, MovieDetailDto>()
+                .ForMember(x => x.Genres, options => options.MapFrom(MapMovieGenres))
+                .ForMember(x => x.Actors, options => options.MapFrom(MapMovieActors));
         }
 
         private List<MovieActor> MapMovieActors(CreateMovieDto dto, Movie movie)
@@ -64,7 +69,7 @@ namespace MovieApi.Mappers
             {
                 result.Add(new MovieActor()
                 {
-                    ActorId  = actor.ActorId,
+                    ActorId = actor.ActorId,
                     Character = actor.Character
                 });
             }
@@ -82,6 +87,40 @@ namespace MovieApi.Mappers
             }
             return result;
         }
+
+
+        private List<GenreDto> MapMovieGenres(Movie movie, MovieDetailDto dto)
+        {
+            var result = new List<GenreDto>();
+            if (movie.MovieGenre is null) { return result; }
+
+            foreach (var genre in movie.MovieGenre)
+            {
+                result.Add(new GenreDto()
+                {
+                    Id = genre.GenreId,
+                    Name = genre.Genre.Name
+                });
+            }
+            return result;
+        }
+        private List<ActorMovieDetailDto> MapMovieActors(Movie movie, MovieDetailDto dto)
+        {
+            var result = new List<ActorMovieDetailDto>();
+            if (movie.MovieActors is null) { return result; }
+
+            foreach (var actor in movie.MovieActors)
+            {
+                result.Add(new ActorMovieDetailDto()
+                {
+                    Id = actor.ActorId,
+                    Name = actor.Actor.Name,
+                    Character = actor.Character,
+                });
+            }
+            return result;
+        }
+
 
     }
 }

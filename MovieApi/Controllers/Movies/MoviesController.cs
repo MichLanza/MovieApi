@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
 using MovieApi.Dtos;
 using MovieApi.Dtos.Movies;
-using MovieApi.Dtos.NewFolder;
 using MovieApi.Entities;
 using MovieApi.Storage;
+using System.Linq.Dynamic.Core;
 
 namespace MovieApi.Controllers.Movies
 {
@@ -29,21 +29,21 @@ namespace MovieApi.Controllers.Movies
             _storage = storage;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery] PaginationQuery pagination)
-        {
+        //[HttpGet]
+        //public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery] PaginationQuery pagination)
+        //{
 
-            var queryable = _context.Movies.AsQueryable();
-            var list = await queryable.ToListAsync();
-            var data = _mapper.Map<List<MovieDto>>(list).OrderBy(x => x.Title);
-            if (pagination.PageSize > 0)
-            {
-                var pagedResponse = PagedList<MovieDto>.Create(data, pagination.Page, pagination.PageSize);
-                return Ok(pagedResponse);
-            }
+        //    var queryable = _context.Movies.AsQueryable();
+        //    var list = await queryable.ToListAsync();
+        //    var data = _mapper.Map<List<MovieDto>>(list).OrderBy(x => x.Title);
+        //    if (pagination.PageSize > 0)
+        //    {
+        //        var pagedResponse = PagedList<MovieDto>.Create(data, pagination.Page, pagination.PageSize);
+        //        return Ok(pagedResponse);
+        //    }
 
-            return Ok(data);
-        }
+        //    return Ok(data);
+        //}
 
 
         [HttpGet("index")]
@@ -72,32 +72,60 @@ namespace MovieApi.Controllers.Movies
         }
 
 
-        [HttpGet("filter")]
-        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery]MovieFiltersDto filtersDto)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery] MovieFiltersDto filtersDto)
         {
             var queryable = _context.Movies.AsQueryable();
 
-            if(!string.IsNullOrEmpty(filtersDto.Title))
+            if (!string.IsNullOrEmpty(filtersDto.Title))
             {
-                queryable =  queryable.Where(x=> x.Title.Contains(filtersDto.Title));   
+                queryable = queryable.Where(x => x.Title.Contains(filtersDto.Title));
+            }
+            if (filtersDto.OnCinema)
+            {
+                queryable = queryable.Where(x => x.OnCinema);
+            }
+            if (filtersDto.PremiereDate)
+            {
+                var today = DateTime.Today;
+                queryable = queryable.Where(x => x.PremiereDate > today);
+            }
+            if (filtersDto.Genre != 0)
+            {
+                queryable = queryable.Where(x => x.MovieGenre.Select(y => y.GenreId).Contains(filtersDto.Genre));
+            }
+            if (!string.IsNullOrEmpty(filtersDto.ColumnToSort))
+            {
+                var order = filtersDto.AscOrder ? "ascending" : "descending";
+                queryable = queryable.OrderBy($"{filtersDto.ColumnToSort} {order}");
             }
 
-            return Ok();
+            var result = _mapper.Map<List<MovieDto>>(queryable);
+            if (filtersDto.PageSize > 0)
+            {
+                var pagedResult = PagedList<MovieDto>.Create(result, filtersDto.Page, filtersDto.PageSize);
+                return Ok(pagedResult);
+            }
+
+            return Ok(result);
         }
 
 
         [HttpGet("{id:guid}", Name = "GetMovieById")]
-        public async Task<ActionResult<MovieDto>> GetMovie(Guid id)
+        public async Task<ActionResult<MovieDetailDto>> GetMovie(Guid id)
         {
 
-            var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _context.Movies
+                .Include(x => x.MovieActors).ThenInclude(x => x.Actor)
+                .Include(x => x.MovieGenre).ThenInclude(x => x.Genre)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie is null)
             {
                 return NotFound(new { message = $"movie with id: {id} not found" });
             }
 
-            var response = _mapper.Map<MovieDto>(movie);
+            var response = _mapper.Map<MovieDetailDto>(movie);
 
             return response;
         }

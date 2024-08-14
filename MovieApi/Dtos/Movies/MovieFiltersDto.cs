@@ -6,6 +6,13 @@
 
         public bool OnCinema { get; set; }
 
-        public DateTime PremiereDate { get; set; }
+        public bool PremiereDate { get; set; }
+
+        public int Genre { get; set; } = 0;
+
+        public string ColumnToSort { get; set; } = string.Empty ;
+
+        public bool AscOrder { get; set; } = true;
+
     }
 }

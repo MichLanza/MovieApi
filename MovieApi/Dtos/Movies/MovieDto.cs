@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MovieApi.Dtos.NewFolder
+namespace MovieApi.Dtos.Movies
 {
     public class MovieDto
     {
