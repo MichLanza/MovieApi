@@ -33,7 +33,7 @@ namespace MovieApi.Controllers.Actors
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get([FromQuery] Pagination pagination)
+        public async Task<IActionResult> Get([FromQuery] PaginationQuery pagination)
         {
             var queryable = _context.Actors.AsQueryable();
 
