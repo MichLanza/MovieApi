@@ -6,36 +6,63 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MovieApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Addnewtables : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "BirthDay",
-                table: "Movies");
+            migrationBuilder.CreateTable(
+                name: "Actors",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(170)", maxLength: 170, nullable: false),
+                    BirthDay = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Photo = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Actors", x => x.Id);
+                });
 
-            migrationBuilder.DropColumn(
-                name: "Name",
-                table: "Movies");
+            migrationBuilder.CreateTable(
+                name: "Genres",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Genres", x => x.Id);
+                });
 
-            migrationBuilder.DropColumn(
-                name: "Photo",
-                table: "Movies");
+            migrationBuilder.CreateTable(
+                name: "Movies",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    OnCinema = table.Column<bool>(type: "bit", nullable: false),
+                    PremiereDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Poster = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Movies", x => x.Id);
+                });
 
-           
             migrationBuilder.CreateTable(
                 name: "MovieGenres",
                 columns: table => new
                 {
-                    IdMovie = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdGenre = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    GenreId = table.Column<int>(type: "int", nullable: false),
-                    MovieId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    MovieId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    GenreId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MovieGenres", x => new { x.IdGenre, x.IdMovie });
+                    table.PrimaryKey("PK_MovieGenres", x => new { x.GenreId, x.MovieId });
                     table.ForeignKey(
                         name: "FK_MovieGenres_Genres_GenreId",
                         column: x => x.GenreId,
@@ -54,15 +81,13 @@ namespace MovieApi.Migrations
                 name: "MoviesActors",
                 columns: table => new
                 {
-                    IdMovie = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IdActor = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Character = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MovieId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ActorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MovieId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Character = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MoviesActors", x => new { x.IdActor, x.IdMovie });
+                    table.PrimaryKey("PK_MoviesActors", x => new { x.ActorId, x.MovieId });
                     table.ForeignKey(
                         name: "FK_MoviesActors_Actors_ActorId",
                         column: x => x.ActorId,
@@ -78,19 +103,9 @@ namespace MovieApi.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_MovieGenres_GenreId",
-                table: "MovieGenres",
-                column: "GenreId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_MovieGenres_MovieId",
                 table: "MovieGenres",
                 column: "MovieId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_MoviesActors_ActorId",
-                table: "MoviesActors",
-                column: "ActorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MoviesActors_MovieId",
@@ -108,29 +123,13 @@ namespace MovieApi.Migrations
                 name: "MoviesActors");
 
             migrationBuilder.DropTable(
+                name: "Genres");
+
+            migrationBuilder.DropTable(
                 name: "Actors");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "BirthDay",
-                table: "Movies",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified));
-
-            migrationBuilder.AddColumn<string>(
-                name: "Name",
-                table: "Movies",
-                type: "nvarchar(170)",
-                maxLength: 170,
-                nullable: false,
-                defaultValue: "");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Photo",
-                table: "Movies",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            migrationBuilder.DropTable(
+                name: "Movies");
         }
     }
 }

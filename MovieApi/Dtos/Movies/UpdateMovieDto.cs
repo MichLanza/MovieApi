@@ -16,8 +16,8 @@ namespace MovieApi.Dtos.Movies
         [FileTypeValidation(fileType: FileType.Image)]
         public IFormFile Poster { get; set; }
 
-        [ModelBinder(BinderType = typeof(TypeBinder<List<Guid>>))]
-        public List<Guid> GenreIds { get; set; }
+        [ModelBinder(BinderType = typeof(TypeBinder<List<int>>))]
+        public List<int> GenreIds { get; set; }
 
         [ModelBinder(BinderType = typeof(TypeBinder<List<ActorMovieCreateDto>>))]
         public List<ActorMovieCreateDto> Actors { get; set; }

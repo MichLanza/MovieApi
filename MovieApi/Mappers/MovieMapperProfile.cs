@@ -2,7 +2,6 @@
 using MovieApi.Dtos.Movies;
 using MovieApi.Dtos.NewFolder;
 using MovieApi.Entities;
-using System.Collections.Generic;
 
 namespace MovieApi.Mappers
 {
@@ -36,7 +35,7 @@ namespace MovieApi.Mappers
             {
                 result.Add(new MovieActor()
                 {
-                    IdActor = actor.ActorId,
+                    ActorId = actor.ActorId,
                     Character = actor.Character
                 });
             }
@@ -50,7 +49,7 @@ namespace MovieApi.Mappers
 
             foreach (var id in dto.GenreIds)
             {
-                result.Add(new MovieGenre() { IdGenre = id });
+                result.Add(new MovieGenre() { GenreId = id });
             }
             return result;
         }
@@ -65,7 +64,7 @@ namespace MovieApi.Mappers
             {
                 result.Add(new MovieActor()
                 {
-                    IdActor = actor.ActorId,
+                    ActorId  = actor.ActorId,
                     Character = actor.Character
                 });
             }
@@ -79,7 +78,7 @@ namespace MovieApi.Mappers
 
             foreach (var id in dto.GenreIds)
             {
-                result.Add(new MovieGenre() { IdGenre = id });
+                result.Add(new MovieGenre() { GenreId = id });
             }
             return result;
         }

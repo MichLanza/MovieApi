@@ -12,8 +12,8 @@ using MovieApi.Db;
 namespace MovieApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240814142520_Addnewtables")]
-    partial class Addnewtables
+    [Migration("20240814160944_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -94,25 +94,17 @@ namespace MovieApi.Migrations
 
             modelBuilder.Entity("MovieApi.Entities.MovieActor", b =>
                 {
-                    b.Property<Guid>("IdActor")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdMovie")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("ActorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Character")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid>("MovieId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("IdActor", "IdMovie");
-
-                    b.HasIndex("ActorId");
+                    b.HasKey("ActorId", "MovieId");
 
                     b.HasIndex("MovieId");
 
@@ -121,21 +113,13 @@ namespace MovieApi.Migrations
 
             modelBuilder.Entity("MovieApi.Entities.MovieGenre", b =>
                 {
-                    b.Property<Guid>("IdGenre")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("IdMovie")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("GenreId")
                         .HasColumnType("int");
 
                     b.Property<Guid>("MovieId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("IdGenre", "IdMovie");
-
-                    b.HasIndex("GenreId");
+                    b.HasKey("GenreId", "MovieId");
 
                     b.HasIndex("MovieId");
 
@@ -145,13 +129,13 @@ namespace MovieApi.Migrations
             modelBuilder.Entity("MovieApi.Entities.MovieActor", b =>
                 {
                     b.HasOne("MovieApi.Entities.Actor", "Actor")
-                        .WithMany()
+                        .WithMany("MovieActors")
                         .HasForeignKey("ActorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("MovieApi.Entities.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("MovieActors")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -170,7 +154,7 @@ namespace MovieApi.Migrations
                         .IsRequired();
 
                     b.HasOne("MovieApi.Entities.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("MovieGenre")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -178,6 +162,18 @@ namespace MovieApi.Migrations
                     b.Navigation("Genre");
 
                     b.Navigation("Movie");
+                });
+
+            modelBuilder.Entity("MovieApi.Entities.Actor", b =>
+                {
+                    b.Navigation("MovieActors");
+                });
+
+            modelBuilder.Entity("MovieApi.Entities.Movie", b =>
+                {
+                    b.Navigation("MovieActors");
+
+                    b.Navigation("MovieGenre");
                 });
 #pragma warning restore 612, 618
         }

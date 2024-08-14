@@ -33,7 +33,7 @@ namespace MovieApi.Controllers.Movies
         public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery] PaginationQuery pagination)
         {
 
-            var queryable =  _context.Movies.AsQueryable();
+            var queryable = _context.Movies.AsQueryable();
             var list = await queryable.ToListAsync();
             var data = _mapper.Map<List<MovieDto>>(list).OrderBy(x => x.Title);
             if (pagination.PageSize > 0)
@@ -44,6 +44,47 @@ namespace MovieApi.Controllers.Movies
 
             return Ok(data);
         }
+
+
+        [HttpGet("index")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies()
+        {
+            var top = 5;
+            var today = DateTime.Today;
+            var nextPremier = await _context.Movies
+                .Where(x => x.PremiereDate > today)
+                .OrderBy(x => x.PremiereDate)
+                .Take(top)
+                .ToListAsync();
+
+            var onCinemas = await _context.Movies
+                .Where(x => x.OnCinema)
+                .Take(top)
+                .ToListAsync();
+
+            var response = new ListMoviesDto()
+            {
+                NextPremiers = _mapper.Map<List<MovieDto>>(nextPremier),
+                OnCinemas = _mapper.Map<List<MovieDto>>(onCinemas),
+            };
+
+            return Ok(response);
+        }
+
+
+        [HttpGet("filter")]
+        public async Task<ActionResult<IEnumerable<MovieDto>>> GetMovies([FromQuery]MovieFiltersDto filtersDto)
+        {
+            var queryable = _context.Movies.AsQueryable();
+
+            if(!string.IsNullOrEmpty(filtersDto.Title))
+            {
+                queryable =  queryable.Where(x=> x.Title.Contains(filtersDto.Title));   
+            }
+
+            return Ok();
+        }
+
 
         [HttpGet("{id:guid}", Name = "GetMovieById")]
         public async Task<ActionResult<MovieDto>> GetMovie(Guid id)
@@ -59,8 +100,8 @@ namespace MovieApi.Controllers.Movies
             var response = _mapper.Map<MovieDto>(movie);
 
             return response;
-        }      
-      
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> PostMovie([FromForm] CreateMovieDto movieDto)
@@ -84,7 +125,7 @@ namespace MovieApi.Controllers.Movies
             return new CreatedAtRouteResult("GetMovieById", new { id = response.Id }, movieDto);
         }
 
-        
+
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutMovie(Guid id, [FromForm] UpdateMovieDto dto)
         {

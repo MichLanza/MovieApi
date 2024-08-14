@@ -23,9 +23,9 @@ namespace MovieApi.Db
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MovieGenre>()
-                .HasKey(x => new { x.IdGenre, x.IdMovie });
+                .HasKey(x => new { x.GenreId, x.MovieId });
             modelBuilder.Entity<MovieActor>()
-                .HasKey(x => new { x.IdActor, x.IdMovie });
+                .HasKey(x => new { x.ActorId, x.MovieId });
 
             base.OnModelCreating(modelBuilder);
         }
