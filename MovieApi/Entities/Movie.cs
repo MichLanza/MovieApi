@@ -16,5 +16,9 @@ namespace MovieApi.Entities
 
         public string Poster { get; set; } = string.Empty;
 
+        public List<MovieActor> MovieActors { get; set; }
+        public List<MovieGenre> MovieGenre { get; set; }
+
+
     }
 }

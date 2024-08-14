@@ -4,12 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieApi.Db;
 using MovieApi.Dtos;
-using MovieApi.Dtos.Actors;
 using MovieApi.Dtos.Movies;
 using MovieApi.Dtos.NewFolder;
 using MovieApi.Entities;
 using MovieApi.Storage;
-using System.Linq;
 
 namespace MovieApi.Controllers.Movies
 {
@@ -90,7 +88,10 @@ namespace MovieApi.Controllers.Movies
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutMovie(Guid id, [FromForm] UpdateMovieDto dto)
         {
-            var movie = await _context.Movies.FirstOrDefaultAsync(m => m.Id == id);
+            var movie = await _context.Movies
+                .Include(x => x.MovieGenre)
+                .Include(x => x.MovieActors)
+                .FirstOrDefaultAsync(m => m.Id == id);
 
             if (movie is null)
             {
